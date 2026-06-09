@@ -14,7 +14,7 @@ rules:
     resources: ["pods", "services", "namespaces", "configmaps"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["argoproj.io"]
-    resources: ["rollouts", "analysisruns", "analysistemplates"]
+    resources: ["rollouts", "rollouts/status", "analysisruns", "analysistemplates"]
     verbs: ["*"]
   - apiGroups: ["chaos-mesh.org"]
     resources: ["networkchaos", "podchaos", "stresschaos"]
