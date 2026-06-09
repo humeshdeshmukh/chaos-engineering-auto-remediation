@@ -404,6 +404,8 @@ def inject_chaos():
         with open(temp_path, 'w') as f:
             f.write(rendered_content)
             
+        # Delete existing chaos mesh experiment first to prevent admission webhook update rejection
+        subprocess.run(["kubectl", "delete", "-f", temp_path, "--ignore-not-found=true"], capture_output=True)
         # Apply the rendered manifest
         res = subprocess.run(["kubectl", "apply", "-f", temp_path], capture_output=True, text=True)
         if res.returncode == 0:
