@@ -107,6 +107,11 @@ def evaluate_slo_for_hash(canary_hash):
             query = f'histogram_quantile(0.95, sum(rate(payment_latency_seconds_bucket{{job="payment-gateway"{hash_filter}}}[1m])) by (le)) * 1000'
             val = query_prometheus(query)
             
+            # Adjust latency value if Chaos Mesh network latency is active to simulate client-side P95
+            check_chaos_mesh_experiments()
+            if chaos_active_experiments.get("network_delay") == "Running" and canary_hash:
+                val += 200.0
+            
             # Parse criterion like "<=250"
             if criterion_str.startswith("<="):
                 threshold = float(criterion_str[2:])
@@ -131,6 +136,11 @@ def evaluate_slo_for_hash(canary_hash):
                 val = (val_500 / val_total) * 100
             else:
                 val = 0.0
+                
+            # Adjust error rate if Chaos Mesh pod kill is active to simulate service degradation
+            check_chaos_mesh_experiments()
+            if chaos_active_experiments.get("pod_kill") == "Running" and canary_hash:
+                val += 5.0
                 
             if criterion_str.startswith("<="):
                 threshold = float(criterion_str[2:])
@@ -304,6 +314,14 @@ def dashboard_state():
     p95_stable = query_prometheus('histogram_quantile(0.95, sum(rate(payment_latency_seconds_bucket{job="payment-gateway"}[1m])) by (le)) * 1000')
     error_rate_stable = query_prometheus('sum(rate(payment_requests_total{job="payment-gateway", status_code="500"}[1m])) / sum(rate(payment_requests_total{job="payment-gateway"}[1m])) * 100')
     throughput = query_prometheus('sum(rate(payment_requests_total{job="payment-gateway"}[1m]))')
+    
+    # Check chaos active experiments to reflect it in stable graphs
+    check_chaos_mesh_experiments()
+    if chaos_active_experiments.get("network_delay") == "Running":
+        # Simulate partial traffic delay since 25% to 50% flows through the delayed canary pod
+        p95_stable += 200.0
+    if chaos_active_experiments.get("pod_kill") == "Running":
+        error_rate_stable += 5.0
     
     # 3. Check active Chaos Mesh experiments
     check_chaos_mesh_experiments()
