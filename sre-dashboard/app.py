@@ -331,8 +331,8 @@ def check_chaos_mesh_experiments():
             items = data.get("items", [])
             active = False
             for item in items:
-                status = item.get("status", {}).get("experiment", {}).get("phase", "Stopped")
-                if status == "Injected":
+                status = item.get("status", {}).get("experiment", {}).get("desiredPhase", "Stopped")
+                if status == "Run":
                     active = True
                     break
             chaos_active_experiments["network_delay"] = "Running" if active else "Stopped"
@@ -349,8 +349,8 @@ def check_chaos_mesh_experiments():
             items = data.get("items", [])
             active = False
             for item in items:
-                status = item.get("status", {}).get("experiment", {}).get("phase", "Stopped")
-                if status == "Injected":
+                status = item.get("status", {}).get("experiment", {}).get("desiredPhase", "Stopped")
+                if status == "Run":
                     active = True
                     break
             chaos_active_experiments["pod_kill"] = "Running" if active else "Stopped"
