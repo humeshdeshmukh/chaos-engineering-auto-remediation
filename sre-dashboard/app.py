@@ -487,6 +487,38 @@ def rollout_action():
         
     return jsonify({"status": "error", "message": "Invalid action"}), 400
 
+@app.route("/api/rollout/update", methods=["POST"])
+def update_rollout():
+    import subprocess
+    # Find current version
+    res = subprocess.run(["kubectl", "get", "rollout", "payment-gateway", "-n", "default", "-o", "jsonpath={.spec.template.spec.containers[0].env[0].value}"], capture_output=True, text=True)
+    current_version = res.stdout.strip() if res.returncode == 0 else "v1"
+    
+    new_version = "v2" if current_version == "v1" else "v1"
+    
+    logger.info(f"Triggering rollout update from {current_version} to {new_version}")
+    
+    # Use JSON patch to toggle env APP_VERSION on the custom rollout resource
+    patch_json = '[{"op": "replace", "path": "/spec/template/spec/containers/0/env/0/value", "value": "' + new_version + '"}]'
+    res_update = subprocess.run(["kubectl", "patch", "rollout", "payment-gateway", "-n", "default", "--type=json", "-p", patch_json], capture_output=True, text=True)
+    
+    if res_update.returncode == 0:
+        # Clear slack_alerts to make it look clean for the new deployment run
+        if len(slack_alerts) > 1:
+            slack_alerts[:] = [slack_alerts[0]]
+            
+        slack_alerts.append({
+            "id": f"alert-{int(time.time())}",
+            "time": time.strftime('%H:%M:%S'),
+            "type": "deployment_start",
+            "title": f"🚀 NEW DEPLOYMENT TRIGGERED: {new_version.upper()}",
+            "message": f"Progressive deployment of version *{new_version.upper()}* started. Shifted 25% traffic to canary pods.",
+            "details": []
+        })
+        return jsonify({"status": "success", "message": f"Rollout updated to version {new_version.upper()} successfully!"})
+    else:
+        return jsonify({"status": "error", "message": res_update.stderr}), 500
+
 if __name__ == "__main__":
     logger.info("Starting SRE Dashboard on port 5000...")
     app.run(host="0.0.0.0", port=5000)

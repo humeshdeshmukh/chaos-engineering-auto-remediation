@@ -50,7 +50,7 @@ def pay():
 
     time.sleep(processing_time)
     
-    if trigger_error or (random.random() < 0.01): # 1% baseline error rate
+    if trigger_error or (random.random() < 0.002): # 0.2% baseline error rate
         status_code = 500
         response = jsonify({"status": "error", "message": "Internal Database Timeout", "version": APP_VERSION})
     else:

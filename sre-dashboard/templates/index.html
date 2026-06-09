@@ -456,6 +456,77 @@
             50% { box-shadow: 0 0 20px var(--accent-secondary); }
             100% { box-shadow: 0 0 5px var(--accent-secondary); }
         }
+
+        /* Dynamic SVG Pipeline Styles */
+        .pipeline-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+        
+        .pipeline-svg-container {
+            width: 100%;
+            overflow-x: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pipeline-svg {
+            width: 100%;
+            max-width: 1000px;
+            height: auto;
+            min-height: 180px;
+        }
+
+        .svg-node-rect {
+            fill: #0c101a;
+            stroke: var(--card-border);
+            stroke-width: 1.5px;
+            rx: 10px;
+            ry: 10px;
+            transition: all 0.5s ease;
+        }
+
+        .svg-node-title {
+            fill: var(--text-main);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .svg-node-subtitle {
+            fill: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .svg-edge-path {
+            stroke: rgba(255, 255, 255, 0.15);
+            stroke-width: 2px;
+            stroke-dasharray: 5, 5;
+            animation: dash 30s linear infinite;
+            fill: none;
+            transition: all 0.5s ease;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+
+        /* SVG States */
+        .node-active-green { stroke: var(--success); filter: drop-shadow(0px 0px 8px rgba(16, 185, 129, 0.4)); }
+        .node-active-yellow { stroke: var(--warning); filter: drop-shadow(0px 0px 8px rgba(245, 158, 11, 0.4)); }
+        .node-active-red { stroke: var(--danger); filter: drop-shadow(0px 0px 8px rgba(239, 68, 68, 0.4)); }
+        .node-active-purple { stroke: var(--accent-secondary); filter: drop-shadow(0px 0px 8px rgba(168, 85, 247, 0.4)); }
+
+        .edge-pulse-green { stroke: var(--success); stroke-width: 3px; stroke-dasharray: none; filter: drop-shadow(0px 0px 4px var(--success)); }
+        .edge-pulse-purple { stroke: var(--accent-secondary); stroke-width: 3px; stroke-dasharray: none; filter: drop-shadow(0px 0px 4px var(--accent-secondary)); }
+        .edge-pulse-red { stroke: var(--danger); stroke-width: 3px; stroke-dasharray: none; filter: drop-shadow(0px 0px 4px var(--danger)); }
     </style>
 </head>
 <body>
@@ -498,6 +569,88 @@
         </div>
     </div>
 
+    <!-- Dynamic SVG System Pipeline Infographic -->
+    <div class="pipeline-card">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            🔗 Live Chaos & Progressive Delivery Pipeline Flow
+            <span class="badge badge-running" style="margin-left: auto; letter-spacing: 0.05em;">Interactive Flow</span>
+        </h3>
+        <div class="pipeline-svg-container">
+            <svg class="pipeline-svg" viewBox="0 0 1000 220" xmlns="http://www.w3.org/2000/svg">
+                <!-- Definitions for arrows and markers -->
+                <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="rgba(255,255,255,0.3)" />
+                    </marker>
+                    <marker id="arrow-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="var(--success)" />
+                    </marker>
+                    <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="var(--accent-secondary)" />
+                    </marker>
+                    <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="var(--danger)" />
+                    </marker>
+                </defs>
+
+                <!-- Flow Edges (Paths) -->
+                <!-- Argo -> Canary -->
+                <path id="edgeArgoCanary" d="M 160 80 L 220 80" class="svg-edge-path" marker-end="url(#arrow)" />
+                <!-- Chaos -> Canary -->
+                <path id="edgeChaosCanary" d="M 290 150 L 290 120" class="svg-edge-path" marker-end="url(#arrow)" />
+                <!-- Canary -> Prometheus -->
+                <path id="edgeCanaryProm" d="M 360 80 L 420 80" class="svg-edge-path" marker-end="url(#arrow)" />
+                <!-- Prometheus -> Keptn -->
+                <path id="edgePromKeptn" d="M 560 80 L 620 80" class="svg-edge-path" marker-end="url(#arrow)" />
+                <!-- Keptn -> Slack -->
+                <path id="edgeKeptnSlack" d="M 760 80 L 820 80" class="svg-edge-path" marker-end="url(#arrow)" />
+
+                <!-- Nodes -->
+                <!-- 1. Argo Rollouts -->
+                <g id="nodeArgo">
+                    <rect x="20" y="45" width="140" height="70" class="svg-node-rect node-active-green" id="rectArgo" />
+                    <text x="32" y="72" class="svg-node-title">Argo Rollouts</text>
+                    <text x="32" y="92" class="svg-node-subtitle" id="textArgoStatus">Status: Healthy</text>
+                </g>
+
+                <!-- 2. Canary Fleet -->
+                <g id="nodeCanary">
+                    <rect x="220" y="45" width="140" height="70" class="svg-node-rect" id="rectCanary" />
+                    <text x="232" y="72" class="svg-node-title">Canary Fleet</text>
+                    <text x="232" y="92" class="svg-node-subtitle" id="textCanaryStatus">Inactive</text>
+                </g>
+
+                <!-- 3. Chaos Mesh -->
+                <g id="nodeChaos">
+                    <rect x="220" y="145" width="140" height="60" class="svg-node-rect" id="rectChaos" />
+                    <text x="232" y="170" class="svg-node-title">Chaos Mesh</text>
+                    <text x="232" y="188" class="svg-node-subtitle" id="textChaosStatus">Inactive</text>
+                </g>
+
+                <!-- 4. Prometheus -->
+                <g id="nodeProm">
+                    <rect x="420" y="45" width="140" height="70" class="svg-node-rect" id="rectProm" />
+                    <text x="432" y="72" class="svg-node-title">Prometheus</text>
+                    <text x="432" y="92" class="svg-node-subtitle" id="textPromLatency">Latency: N/A</text>
+                </g>
+
+                <!-- 5. Keptn SLO Engine -->
+                <g id="nodeKeptn">
+                    <rect x="620" y="45" width="140" height="70" class="svg-node-rect" id="rectKeptn" />
+                    <text x="632" y="72" class="svg-node-title">Keptn Evaluator</text>
+                    <text x="632" y="92" class="svg-node-subtitle" id="textKeptnStatus">SLO: Waiting</text>
+                </g>
+
+                <!-- 6. Slack Alert -->
+                <g id="nodeSlack">
+                    <rect x="820" y="45" width="140" height="70" class="svg-node-rect" id="rectSlack" />
+                    <text x="832" y="72" class="svg-node-title">Slack Gateway</text>
+                    <text x="832" y="92" class="svg-node-subtitle" id="textSlackStatus">Idle</text>
+                </g>
+            </svg>
+        </div>
+    </div>
+
     <!-- Main Content Section -->
     <div class="layout-main">
         
@@ -518,11 +671,12 @@
                             <button class="btn btn-outline" style="border-color: var(--danger); color: #fca5a5;" onclick="stopChaos()">🛡️ Halt Chaos</button>
                         </div>
                     </div>
-                    <div style="flex: 1; min-width: 200px; border-left: 1px solid var(--card-border); padding-left: 24px;">
-                        <h4 style="margin-bottom: 12px; color: var(--text-muted); font-size: 14px;">Rollout Manual Actions</h4>
+                    <div style="flex: 1; min-width: 220px; border-left: 1px solid var(--card-border); padding-left: 24px;">
+                        <h4 style="margin-bottom: 12px; color: var(--text-muted); font-size: 14px;">Rollout Progressive Delivery</h4>
                         <div class="button-group">
-                            <button class="btn btn-primary" onclick="rolloutAction('promote')">Promote Release</button>
-                            <button class="btn btn-danger" onclick="rolloutAction('abort')">Trigger Abort Rollback</button>
+                            <button class="btn btn-primary" onclick="triggerUpdate()">🚀 Trigger Deploy (v1/v2 Toggle)</button>
+                            <button class="btn btn-outline" onclick="rolloutAction('promote')">Promote Release</button>
+                            <button class="btn btn-danger" onclick="rolloutAction('abort')">Manual Abort</button>
                         </div>
                     </div>
                 </div>
@@ -890,6 +1044,130 @@
                     }
                 });
 
+                // 6. Update Dynamic SVG Pipeline Node & Edge Styles
+                const svgRectArgo = document.getElementById('rectArgo');
+                const svgTextArgoStatus = document.getElementById('textArgoStatus');
+                const svgEdgeArgoCanary = document.getElementById('edgeArgoCanary');
+                
+                const svgRectCanary = document.getElementById('rectCanary');
+                const svgTextCanaryStatus = document.getElementById('textCanaryStatus');
+                const svgEdgeCanaryProm = document.getElementById('edgeCanaryProm');
+                
+                const svgRectChaos = document.getElementById('rectChaos');
+                const svgTextChaosStatus = document.getElementById('textChaosStatus');
+                const svgEdgeChaosCanary = document.getElementById('edgeChaosCanary');
+                
+                const svgRectProm = document.getElementById('rectProm');
+                const svgTextPromLatency = document.getElementById('textPromLatency');
+                const svgEdgePromKeptn = document.getElementById('edgePromKeptn');
+                
+                const svgRectKeptn = document.getElementById('rectKeptn');
+                const svgTextKeptnStatus = document.getElementById('textKeptnStatus');
+                const svgEdgeKeptnSlack = document.getElementById('edgeKeptnSlack');
+                
+                const svgRectSlack = document.getElementById('rectSlack');
+                const svgTextSlackStatus = document.getElementById('textSlackStatus');
+
+                // Argo Rollouts Node Status
+                svgTextArgoStatus.textContent = `Status: ${rolloutPhase}`;
+                if (rolloutPhase === 'Healthy') {
+                    svgRectArgo.className.baseVal = 'svg-node-rect node-active-green';
+                } else if (rolloutPhase === 'Progressing') {
+                    svgRectArgo.className.baseVal = 'svg-node-rect node-active-yellow';
+                } else {
+                    svgRectArgo.className.baseVal = 'svg-node-rect node-active-red';
+                }
+
+                // Canary Pod Fleet Node Status
+                const isCanaryActive = data.rollout.canary_hash && data.rollout.canary_hash !== 'N/A';
+                if (isCanaryActive) {
+                    svgRectCanary.className.baseVal = 'svg-node-rect node-active-yellow';
+                    svgTextCanaryStatus.textContent = `Active: ${rolloutStep}`;
+                    svgEdgeArgoCanary.className.baseVal = 'svg-edge-path edge-pulse-green';
+                    svgEdgeArgoCanary.setAttribute('marker-end', 'url(#arrow-green)');
+                } else {
+                    svgRectCanary.className.baseVal = 'svg-node-rect';
+                    svgTextCanaryStatus.textContent = 'Inactive';
+                    svgEdgeArgoCanary.className.baseVal = 'svg-edge-path';
+                    svgEdgeArgoCanary.setAttribute('marker-end', 'url(#arrow)');
+                }
+
+                // Chaos Mesh Node Status
+                const isChaosActive = networkState === 'Running' || killState === 'Running';
+                if (isChaosActive) {
+                    svgRectChaos.className.baseVal = 'svg-node-rect node-active-purple';
+                    svgTextChaosStatus.textContent = networkState === 'Running' ? 'Network Latency' : 'Pod Kill';
+                    svgEdgeChaosCanary.className.baseVal = 'svg-edge-path edge-pulse-purple';
+                    svgEdgeChaosCanary.setAttribute('marker-end', 'url(#arrow-purple)');
+                } else {
+                    svgRectChaos.className.baseVal = 'svg-node-rect';
+                    svgTextChaosStatus.textContent = 'Inactive';
+                    svgEdgeChaosCanary.className.baseVal = 'svg-edge-path';
+                    svgEdgeChaosCanary.setAttribute('marker-end', 'url(#arrow)');
+                }
+
+                // Prometheus Node Status
+                svgTextPromLatency.textContent = `p95 Latency: ${p95}ms`;
+                if (isCanaryActive) {
+                    svgEdgeCanaryProm.className.baseVal = 'svg-edge-path edge-pulse-green';
+                    svgEdgeCanaryProm.setAttribute('marker-end', 'url(#arrow-green)');
+                    if (p95 > 250) {
+                        svgRectProm.className.baseVal = 'svg-node-rect node-active-red';
+                    } else {
+                        svgRectProm.className.baseVal = 'svg-node-rect node-active-green';
+                    }
+                } else {
+                    svgRectProm.className.baseVal = 'svg-node-rect';
+                    svgEdgeCanaryProm.className.baseVal = 'svg-edge-path';
+                    svgEdgeCanaryProm.setAttribute('marker-end', 'url(#arrow)');
+                }
+
+                // Keptn SLO Evaluator Node Status
+                if (data.evaluation_history.length > 0) {
+                    const latestEval = data.evaluation_history[data.evaluation_history.length - 1];
+                    svgTextKeptnStatus.textContent = `SLO: ${latestEval.status.toUpperCase()}`;
+                    if (latestEval.status === 'pass') {
+                        svgRectKeptn.className.baseVal = 'svg-node-rect node-active-green';
+                        svgEdgePromKeptn.className.baseVal = 'svg-edge-path edge-pulse-green';
+                        svgEdgePromKeptn.setAttribute('marker-end', 'url(#arrow-green)');
+                    } else {
+                        svgRectKeptn.className.baseVal = 'svg-node-rect node-active-red';
+                        svgEdgePromKeptn.className.baseVal = 'svg-edge-path edge-pulse-red';
+                        svgEdgePromKeptn.setAttribute('marker-end', 'url(#arrow-red)');
+                    }
+                } else {
+                    svgRectKeptn.className.baseVal = 'svg-node-rect';
+                    svgTextKeptnStatus.textContent = 'SLO: Waiting';
+                    svgEdgePromKeptn.className.baseVal = 'svg-edge-path';
+                    svgEdgePromKeptn.setAttribute('marker-end', 'url(#arrow)');
+                }
+
+                // Slack Alert Node Status
+                if (data.slack_alerts.length > 0) {
+                    const latestAlert = data.slack_alerts[data.slack_alerts.length - 1];
+                    if (latestAlert.type === 'rollback') {
+                        svgRectSlack.className.baseVal = 'svg-node-rect node-active-red';
+                        svgTextSlackStatus.textContent = 'Rollback Alert!';
+                        svgEdgeKeptnSlack.className.baseVal = 'svg-edge-path edge-pulse-red';
+                        svgEdgeKeptnSlack.setAttribute('marker-end', 'url(#arrow-red)');
+                    } else if (latestAlert.type === 'chaos_start') {
+                        svgRectSlack.className.baseVal = 'svg-node-rect node-active-purple';
+                        svgTextSlackStatus.textContent = 'Chaos Injected';
+                        svgEdgeKeptnSlack.className.baseVal = 'svg-edge-path edge-pulse-purple';
+                        svgEdgeKeptnSlack.setAttribute('marker-end', 'url(#arrow-purple)');
+                    } else {
+                        svgRectSlack.className.baseVal = 'svg-node-rect node-active-green';
+                        svgTextSlackStatus.textContent = 'Info System Ok';
+                        svgEdgeKeptnSlack.className.baseVal = 'svg-edge-path edge-pulse-green';
+                        svgEdgeKeptnSlack.setAttribute('marker-end', 'url(#arrow-green)');
+                    }
+                } else {
+                    svgRectSlack.className.baseVal = 'svg-node-rect';
+                    svgTextSlackStatus.textContent = 'Idle';
+                    svgEdgeKeptnSlack.className.baseVal = 'svg-edge-path';
+                    svgEdgeKeptnSlack.setAttribute('marker-end', 'url(#arrow)');
+                }
+
             } catch (err) {
                 console.error("Error fetching state:", err);
             }
@@ -934,6 +1212,20 @@
                 fetchState();
             } catch (err) {
                 alert("Failed to trigger rollout action: " + err);
+            }
+        }
+
+        async function triggerUpdate() {
+            try {
+                const response = await fetch('/api/rollout/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const res = await response.json();
+                alert(res.message);
+                fetchState();
+            } catch (err) {
+                alert("Failed to trigger deployment update: " + err);
             }
         }
 

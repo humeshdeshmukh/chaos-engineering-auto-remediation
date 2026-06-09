@@ -13,5 +13,5 @@ spec:
       failureLimit: 1
       provider:
         web:
-          url: http://sre-dashboard.monitoring.svc.cluster.local:5000/api/keptn/evaluate?canary_hash={{args.canary-hash}}
+          url: http://sre-dashboard.default.svc.cluster.local:5000/api/keptn/evaluate?canary_hash={{args.canary-hash}}
           jsonPath: "$.result"
