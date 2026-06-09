@@ -244,13 +244,20 @@ def dashboard_state():
             rollout_info["replicas"] = status.get("replicas", 0)
             rollout_info["updated_replicas"] = status.get("updatedReplicas", 0)
             rollout_info["ready_replicas"] = status.get("readyReplicas", 0)
-            rollout_info["stable_hash"] = status.get("stableRS", "N/A")[:10]
-            rollout_info["canary_hash"] = status.get("currentStepHash", "N/A")[:10]
+            
+            stable_rs = status.get("stableRS", "N/A")
+            current_pod_hash = status.get("currentPodHash", "N/A")
+            rollout_info["stable_hash"] = stable_rs[:10] if stable_rs else "N/A"
+            if current_pod_hash and stable_rs and current_pod_hash != stable_rs:
+                rollout_info["canary_hash"] = current_pod_hash[:10]
+            else:
+                rollout_info["canary_hash"] = "N/A"
             
             # Step progress
             steps = data.get("spec", {}).get("strategy", {}).get("canary", {}).get("steps", [])
             current_step_index = status.get("currentStepIndex", None)
-            if current_step_index is not None:
+            phase = status.get("phase", "")
+            if current_step_index is not None and phase in ["Progressing", "Paused"] and current_step_index < len(steps):
                 rollout_info["step"] = f"Step {current_step_index + 1}/{len(steps)}"
             else:
                 rollout_info["step"] = "Healthy"
@@ -361,9 +368,14 @@ def inject_chaos():
     # 1. Fetch current canary hash
     canary_hash = ""
     try:
-        res_ro = subprocess.run(["kubectl", "get", "rollout", "payment-gateway", "-n", "default", "-o", "jsonpath={.status.currentStepHash}"], capture_output=True, text=True)
+        res_ro = subprocess.run(["kubectl", "get", "rollout", "payment-gateway", "-n", "default", "-o", "json"], capture_output=True, text=True)
         if res_ro.returncode == 0:
-            canary_hash = res_ro.stdout.strip()
+            ro_data = json.loads(res_ro.stdout)
+            status = ro_data.get("status", {})
+            stable_rs = status.get("stableRS", "")
+            current_pod_hash = status.get("currentPodHash", "")
+            if current_pod_hash and stable_rs and current_pod_hash != stable_rs:
+                canary_hash = current_pod_hash
     except Exception as e:
         logger.error(f"Failed to fetch canary hash: {e}")
         
