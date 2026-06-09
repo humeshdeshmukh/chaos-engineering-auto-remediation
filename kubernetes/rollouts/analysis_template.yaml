@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: keptn-slo-analysis
+  namespace: default
+spec:
+  args:
+    - name: canary-hash
+  metrics:
+    - name: keptn-slo-gate
+      interval: 15s
+      successCondition: result == 'pass'
+      failureLimit: 1
+      provider:
+        web:
+          url: http://sre-dashboard.monitoring.svc.cluster.local:5000/api/keptn/evaluate?canary_hash={{args.canary-hash}}
+          jsonPath: "$.result"

@@ -1,0 +1,38 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments & dependencies
+.venv/
+venv/
+ENV/
+env/
+wheels/
+*.egg-info/
+.installed.cfg
+.eggs/
+
+# Binaries & logs
+bin/
+*.log
+/tmp/
+.terraform/
+.vagrant/
+
+# IDE and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
+
+# OS / System files
+.DS_Store
+Thumbs.db
+desktop.ini

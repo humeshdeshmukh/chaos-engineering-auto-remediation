@@ -1,0 +1,19 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: payment-gateway-latency
+  namespace: default
+spec:
+  action: delay
+  mode: all
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      'app': 'payment-gateway'
+      'rollouts-pod-template-hash': 'CANARY_HASH'
+  delay:
+    latency: '200ms'
+    jitter: '10ms'
+  direction: to
+  duration: '5m'

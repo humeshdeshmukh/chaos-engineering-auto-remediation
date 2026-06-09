@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-generator
+  namespace: default
+  labels:
+    app: traffic-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traffic-generator
+  template:
+    metadata:
+      labels:
+        app: traffic-generator
+    spec:
+      containers:
+        - name: generator
+          image: alpine:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              apk add --no-cache curl
+              echo "Starting traffic generation..."
+              while true; do
+                method="GET"
+                if [ $((RANDOM % 2)) -eq 0 ]; then method="POST"; fi
+                
+                # Standard call
+                curl -s -X "${method}" "http://payment-gateway.default.svc.cluster.local/pay" >/dev/null || true
+                
+                # Occasional delay call
+                if [ $((RANDOM % 15)) -eq 0 ]; then
+                  curl -s -X "${method}" "http://payment-gateway.default.svc.cluster.local/pay?delay=0.1" >/dev/null || true
+                fi
+                
+                sleep 0.15
+              done

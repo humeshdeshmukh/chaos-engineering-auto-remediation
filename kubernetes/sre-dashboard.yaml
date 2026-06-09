@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sre-dashboard
+  namespace: default
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sre-dashboard-role
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "namespaces", "configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["argoproj.io"]
+    resources: ["rollouts", "analysisruns", "analysistemplates"]
+    verbs: ["*"]
+  - apiGroups: ["chaos-mesh.org"]
+    resources: ["networkchaos", "podchaos", "stresschaos"]
+    verbs: ["*"]
+  - apiGroups: ["apps"]
+    resources: ["replicasets", "deployments"]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sre-dashboard-binding
+subjects:
+  - kind: ServiceAccount
+    name: sre-dashboard
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: sre-dashboard-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sre-dashboard
+  namespace: default
+  labels:
+    app: sre-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sre-dashboard
+  template:
+    metadata:
+      labels:
+        app: sre-dashboard
+    spec:
+      serviceAccountName: sre-dashboard
+      containers:
+        - name: sre-dashboard
+          image: sre-dashboard:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          env:
+            - name: PROMETHEUS_URL
+              value: "http://prometheus-operator-kube-p-prometheus.monitoring.svc.cluster.local:9090"
+            # Point to local mount of Keptn configs
+          volumeMounts:
+            - name: keptn-volume
+              mountPath: /app/keptn
+            - name: chaos-volume
+              mountPath: /app/chaos
+      volumes:
+        - name: keptn-volume
+          configMap:
+            name: keptn-configs
+        - name: chaos-volume
+          configMap:
+            name: chaos-configs
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sre-dashboard
+  namespace: default
+  labels:
+    app: sre-dashboard
+spec:
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+      nodePort: 30500
+  selector:
+    app: sre-dashboard
+  type: NodePort

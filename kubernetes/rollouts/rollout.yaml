@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: payment-gateway
+  namespace: default
+spec:
+  replicas: 4
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: payment-gateway
+  template:
+    metadata:
+      labels:
+        app: payment-gateway
+    spec:
+      containers:
+        - name: payment-gateway
+          image: payment-gateway:latest
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: APP_VERSION
+              value: "v1"
+            - name: DB_HOST
+              value: "postgres-db-replica"
+  strategy:
+    canary:
+      canaryService: payment-gateway-canary
+      stableService: payment-gateway-stable
+      analysis:
+        templates:
+          - templateName: keptn-slo-analysis
+        args:
+          - name: canary-hash
+            valueFrom:
+              podTemplateHashValue: Latest
+      steps:
+        - setWeight: 25
+        - pause: { duration: 45s }
+        - setWeight: 50
+        - pause: { duration: 45s }

@@ -1,0 +1,21 @@
+apiVersion: "spec.keptn.sh/0.1.1"
+kind: "ServiceLevelObjectives"
+metadata:
+  spec_version: '0.1.1'
+spec:
+  comparison:
+    compare_with: "single_result"
+    include_result_with_status: ["passed", "warning"]
+    number_of_comparison_results: 3
+  objectives:
+    - sli: "response_time_p95"
+      pass:
+        - criteria:
+            - "<=250"
+      warning:
+        - criteria:
+            - "<=350"
+    - sli: "error_rate"
+      pass:
+        - criteria:
+            - "<=1"
